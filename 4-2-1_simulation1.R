@@ -115,7 +115,6 @@ colnames(qual.list) <- c("n","g","quality")
 qual.list$g <- as.factor(qual.list$g)
 
 # box-plot of quality measure
-# for n=10^3
 ggplot(data = qual.list, aes(x=g, y=quality)) + 
   geom_boxplot(aes(fill=g)) +
   facet_wrap(~ n, ncol=4) +
