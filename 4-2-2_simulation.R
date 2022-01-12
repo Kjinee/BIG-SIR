@@ -108,9 +108,10 @@ for (n in n.list){
 }
 
 n.time$strategy <- as.factor(n.time$strategy)
-ggplot(n.time, aes(x=n, y=runtime, col=strategy)) +
+ggplot(n.time, aes(x=as.factor(n), y=runtime, col=strategy, group=strategy)) +
   geom_line() +
   geom_point(aes(shape=strategy)) +
+  scale_color_manual(values=c(4,3,2,1)) +
   labs(title="running time vs n", x="sample size", y="running time")
 
 
@@ -129,9 +130,10 @@ for (p in p.list){
 }
 
 p.time$strategy <- as.factor(p.time$strategy)
-ggplot(p.time, aes(x=p, y=runtime, col=strategy)) +
+ggplot(p.time, aes(x=as.factor(p), y=runtime, col=strategy, group=strategy)) +
   geom_line() +
   geom_point(aes(shape=strategy)) +
+  scale_color_manual(values=c(4,3,2,1)) +
   labs(title="running time vs p", x="covariate dimension p", y="running time")
 
 
@@ -215,7 +217,8 @@ for (ng in g.list){
 }
 
 g.time$strategy <- as.factor(g.time$strategy)
-ggplot(g.time, aes(x=g, y=runtime, col=strategy)) +
+ggplot(g.time, aes(x=as.factor(g), y=runtime, col=strategy, group=strategy)) +
   geom_line() +
   geom_point(aes(shape=strategy)) +
+  scale_color_manual(values=c(4,3,2)) +
   labs(title="running time vs G", x="number of chunks", y="running time")
