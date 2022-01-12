@@ -116,10 +116,7 @@ qual.list$g <- as.factor(qual.list$g)
 
 # box-plot of quality measure
 # for n=10^3
-ggplot(data = qual.list[qual.list$n==1000,], aes(x=g, y=quality)) + 
+ggplot(data = qual.list, aes(x=g, y=quality)) + 
   geom_boxplot(aes(fill=g)) +
-  labs(title="n=1000")
-# for n={5*10^3, 10^4, 5*10^4}
-ggplot(data = qual.list[qual.list$n!=1000,], aes(x=g, y=quality)) + 
-  geom_boxplot(aes(fill=g)) +
-  facet_wrap(~ n)
+  facet_wrap(~ n, ncol=4) +
+  labs(title="Single Index Model", x="g", y="Quality measure")
