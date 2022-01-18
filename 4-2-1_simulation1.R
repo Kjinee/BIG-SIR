@@ -41,7 +41,7 @@ gen.xy <- function(n) {
 
 
 # function to calculate BIG-SIR estimator (using bigmemory + foreach)
-BIG_SIR <- function(x,y,n,ng){
+BIG_SIR <- function(x,y,ng){
   dataYX <- as.big.matrix(cbind(y,x), type="double")
   BIGmatdes <- describe(dataYX)
   
@@ -98,7 +98,7 @@ for (n in n.list){
     
     # BIG-SIR
     for (ng in g.list){
-      beta <- BIG_SIR(x,y,n,ng)
+      beta <- BIG_SIR(x,y,ng)
       qual <- dist(beta, true.beta)
       qual.list <- rbind(qual.list, c(n,ng,qual))
     }
