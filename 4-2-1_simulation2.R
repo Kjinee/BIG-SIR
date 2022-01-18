@@ -4,7 +4,6 @@
 #
 
 library(edrGraphicalTools)
-library(bigmemory)
 library(foreach)
 library(doSNOW)
 library(ggplot2)
@@ -12,6 +11,13 @@ library(ggplot2)
 set.seed(1234)
 
 # quality measure
+matpower <- function(a, alpha){
+  a <- (a + t(a))/2 # symmetrize a
+  tmp <- eigen(a)
+  power <- tmp$vectors %*% diag((tmp$values)^alpha) %*% t(tmp$vectors)
+  return(power)
+}
+
 dist <- function(v1, v2) {
   v1 <- as.matrix(v1)
   v2 <- as.matrix(v2)
@@ -47,33 +53,28 @@ gen.xy <- function(n) {
 }
 
 
-# function to calculate BIG-SIR estimator (using bigmemory + foreach)
-BIG_SIRII <- function(x,y,n,ng){
-  dataYX <- as.big.matrix(cbind(y,x), type="double")
-  BIGmatdes <- describe(dataYX)
-  
-  cl <- makeCluster(4)
-  registerDoSNOW(cl)
-  
-  x <- attach.big.matrix(BIGmatdes)
+# function to calculate BIG-SIR-II estimator (using foreach)
+BIG_SIR_II <- function(x,y,ng){
   
   matEDR.block <- function(x){
-    bhat <- matrix(x / sqrt((sum(x**2))), ncol=1)
-    return(bhat %*% t(bhat))
+    bhat <- matrix(x / sqrt((sum(x**2))), ncol=2)
+    return(bhat %*% t(bhat) / 2)
   }
   
   Scalable.sir <- function(ng, data, size.chunk){
     rows <- ((ng-1)*size.chunk+1):(ng*size.chunk)
-    matEDR.block(edr(data[rows,1], data[rows,-1], H=8, K=2, method="SIR-II")$matEDR[,1:2])
+    matEDR.block(edr(data[rows,1], data[rows,-1], H=8, K=2,
+                     method="SIR-II")$matEDR[,1:2])
   }
+
+  cl <- makeCluster(4)
+  registerDoSNOW(cl)
   
   size.chunk <- nrow(x)/ng
   
   BIGsir <- foreach(g=1:ng, .combine="+")%dopar%{
     require("edrGraphicalTools")
-    require("bigmemory")
-    x <- attach.big.matrix(BIGmatdes)
-    Scalable.sir(g, x, size.chunk)
+    Scalable.sir(g, cbind(y,x), size.chunk)
   }
   
   stopCluster(cl)
@@ -93,19 +94,19 @@ for (n in n.list){
     g.list <- c(10, 50, 100)
   }
   
-  # 500 repetitions
+  # 500 repetition
   for (m in 1:500){
-    xy <- gen.xy(n)
+    xy <- gen.xy2(n)
     x <- xy$x ; y <- xy$y
     
-    # SIR-II
+    # SIR
     beta <- edr(y,x,H=8,K=2,method="SIR-II")$matEDR[,1:2]
     qual <- dist(beta, true.beta)
-    qual.list <- rbind(qual.list, c(n,1,qual))
+    qual.list <- rbind(qual.list, c(n,"SIR",qual))
     
     # BIG-SIR
     for (ng in g.list){
-      beta <- BIG_SIRII(x,y,n,ng)
+      beta <- BIG_SIR_II(x,y,ng)
       qual <- dist(beta, true.beta)
       qual.list <- rbind(qual.list, c(n,ng,qual))
     }
@@ -114,10 +115,10 @@ for (n in n.list){
 
 qual.list <- as.data.frame(qual.list)
 colnames(qual.list) <- c("n","g","quality")
-qual.list$g <- as.factor(qual.list$g)
+qual.list$g <- factor(qual.list$g, levels=c("SIR","10","20","50","100"))
 
 # box-plot of quality measure
-ggplot(data = qual.list2, aes(x=g, y=quality)) + 
-  geom_boxplot(aes(fill=g)) +
-  facet_wrap(~ n, ncol=4) +
+ggplot(data = qual.list, aes(x=g, y=quality)) + 
+  geom_boxplot(aes(group=g)) +
+  facet_wrap(~ n, ncol=4, scales = "free_x") +
   labs(title="Multi-indices Model", x="g", y="Quality measure")
