@@ -129,7 +129,7 @@ qual.list1 <- qual.list1 %>%
 
 # box-plot of quality measure
 ggplot(data = qual.list1, aes(x=g, y=quality)) + 
-  geom_boxplot(aes(fill=g)) +
+  geom_boxplot(aes(group=g)) +
   facet_wrap(~ n, ncol=4, scales = "free_x") +
   labs(title="BIG-SAVE: Single-index Model", x="g", y="Quality measure")
 
