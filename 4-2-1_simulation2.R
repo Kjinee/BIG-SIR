@@ -116,6 +116,7 @@ for (n in n.list){
 qual.list <- as.data.frame(qual.list)
 colnames(qual.list) <- c("n","g","quality")
 qual.list$g <- factor(qual.list$g, levels=c("SIR","10","20","50","100"))
+qual.list$quality <- as.numeric(qual.list$quality)
 
 # box-plot of quality measure
 ggplot(data = qual.list, aes(x=g, y=quality)) + 
