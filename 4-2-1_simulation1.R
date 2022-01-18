@@ -94,7 +94,7 @@ for (n in n.list){
     # SIR
     beta <- edr(y,x,H=8,K=1,method="SIR-I")$matEDR[,1]
     qual <- dist(beta, true.beta)
-    qual.list <- rbind(qual.list, c(n,1,qual))
+    qual.list <- rbind(qual.list, c(n,"SIR",qual))
     
     # BIG-SIR
     for (ng in g.list){
@@ -107,10 +107,10 @@ for (n in n.list){
 
 qual.list <- as.data.frame(qual.list)
 colnames(qual.list) <- c("n","g","quality")
-qual.list$g <- as.factor(qual.list$g)
+qual.list$g <- as.factor(qual.list$g, levels=c("SIR","10","20","50","100"))
 
 # box-plot of quality measure
 ggplot(data = qual.list, aes(x=g, y=quality)) + 
-  geom_boxplot(aes(fill=g)) +
-  facet_wrap(~ n, ncol=4) +
+  geom_boxplot(aes(group=g)) +
+  facet_wrap(~ n, ncol=4, scales = "free_x") +
   labs(title="Single Index Model", x="g", y="Quality measure")
