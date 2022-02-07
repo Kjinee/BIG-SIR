@@ -36,7 +36,7 @@ dist <- function(v1, v2) {
 ######################################################################
 # function to calculate BIG-SAVE estimator (using foreach)
 # x, y : data
-# k : number of indices
+# k : single index(k=1) or multiple indices(k>1)
 # ng : number of blocks(chunks)
 ######################################################################
 
