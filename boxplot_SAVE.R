@@ -67,7 +67,7 @@ BIG_SAVE <- function(x,y,k,ng,p=10){
 # function to generate data
 
 # (model 1) y = 2 (X'b1)^2 + e
-# (model 2) y = 0.4 (X'b1)^2 + (X'b2)^2 + e
+# (model 2) y = (X'b1)^2 + (X'b2)^2 + e
 # (model 3) y = sin(X'b1) + e
 # (model 4) y = sin(X'b1) + (x'b2)^2 + e
 # (model 5) y = 0.5 + X'b1^3 + e
