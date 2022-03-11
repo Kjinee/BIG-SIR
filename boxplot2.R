@@ -109,15 +109,11 @@ gen.xy <- function(model, n, p){
 # calculate quality measure for each n & ng
 compare.qual <- function(model, p, n.list){
   set.seed(1234)
+  ng.list <- c(1, 10, 50, 100)
   qual.list <- c()
   
   # 500 repetitions for each n
   for (n in n.list){
-    if (n == 10^3){
-      ng.list <- c(1, 10, 20)
-    } else {
-      ng.list <- c(1, 10, 50, 100)
-    }
     for (m in 1:500){
       data <- gen.xy(model, n, p)
       x <- data$x ; y <- data$y ; k <- data$k ; true.beta <- data$beta
@@ -133,7 +129,7 @@ compare.qual <- function(model, p, n.list){
   colnames(qual.list) <- c("n", "ng", "quality")
   qual.list <- qual.list %>%
     as.data.frame() %>%
-    mutate(ng = factor(ng, levels=c("1","10","20","50","100")),
+    mutate(ng = factor(ng, levels=c("1","10","50","100")),
            quality = as.numeric(quality))
   qual.list$ng <- recode_factor(qual.list$ng, "1"="SAVE")
   
@@ -153,7 +149,7 @@ n.list <- c(10^4, 5*10^4, 10^5, 5*10^5)
 model1 <- compare.qual(model=1, p=10, n.list)
 draw.boxplot(1, model1)
 
-n.list <- c(10^3, 5*10^3, 10^4, 5*10^4)
+n.list <- c(5*10^3, 10^4, 5*10^4, 10^5)
 model2 <- compare.qual(model=2, p=20, n.list)
 draw.boxplot(2, model2)
 
