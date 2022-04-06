@@ -34,7 +34,7 @@ gen.xy <- function(n, p) {
 
 compare.time <- function(key){
 
-    matEDR.block <- function(x){
+  matEDR.block <- function(x){
     bhat <- matrix(x/sqrt((sum(x**2))), ncol=1)
     return(bhat%*%t(bhat))
   }
@@ -43,8 +43,11 @@ compare.time <- function(key){
     matEDR.block(edr(data[rows,1],data[rows,-1],H=8,K=1,method="SAVE")$matEDR[,1])
   }
   
-  runtime <- matrix(0, nrow=5, ncol=4) # 4 strategies, 5 reps
-  for (m in 1:5){
+  cl <- makeCluster(4)
+  registerDoSNOW(cl)
+  
+  runtime <- matrix(0, nrow=20, ncol=4) # 4 strategies, 20 reps
+  for (m in 1:20){
     xy <- gen.xy(n,p)
     x <- xy$x ; y <- xy$y
     size.chunk <- n/ng
@@ -65,9 +68,6 @@ compare.time <- function(key){
     })[3]
     
     # BIG-SAVE : foreach
-    cl <- makeCluster(4)
-    registerDoSNOW(cl)
-    
     runtime[m,3] <- system.time({
       BIGsave <- foreach(g=1:ng, .combine="+")%dopar%{
         require("edrGraphicalTools")
@@ -75,17 +75,12 @@ compare.time <- function(key){
       est <- eigen(BIGsave)$vectors[,1]
     })[3]
     
-    stopCluster(cl)
-    
     # BIG-SAVE : bigmemory + foreach
     dataYX <- as.big.matrix(cbind(y,x), backingpath="E:/temp",
                             backingfile=paste0(key+m,"test-save.bin"),
                             descriptorfile=paste0(key+m,"test-save.desc"), type="double")
     BIGmatdes <- describe(dataYX)
     x <- attach.big.matrix(BIGmatdes)
-    
-    cl <- makeCluster(4)
-    registerDoSNOW(cl)
     
     runtime[m,4] <- system.time({
       BIGsave <- foreach(g=1:ng, .combine="+")%dopar%{
@@ -96,43 +91,14 @@ compare.time <- function(key){
       }
       est <- eigen(BIGsave)$vectors[,1]
     })[3]
-    
-    stopCluster(cl)
   }
   
-  # return mean running time of 50 reps(exclude time to require packages)
-  result <- colMeans(runtime) - c(0, 0, require.time)
+  stopCluster(cl)
+  
+  # return mean running time of 20 reps
+  result <- colMeans(runtime)
   return(result)
 }
-
-
-######################################################################
-# calcuate time to 'require' packages
-######################################################################
-
-require.time <- matrix(0, 10, 2)
-
-for (m in 1:10){
-  cl <- makeCluster(4)
-  registerDoSNOW(cl)
-  require.time[m,1] <- foreach(g=1:4, .combine=mean)%dopar%{
-    system.time(require("edrGraphicalTools"))[3]
-  }
-  stopCluster(cl)
-  
-  cl <- makeCluster(4)
-  registerDoSNOW(cl)
-  require.time[m,2] <- foreach(g=1:4, .combine=mean)%dopar%{
-    system.time({
-      require("edrGraphicalTools")
-      require("bigmemory")
-    })[3]
-  }
-  stopCluster(cl)
-}
-
-require.time <- colMeans(require.time)
-require.time
 
 
 ######################################################################
@@ -140,7 +106,7 @@ require.time
 ######################################################################
 
 # for n
-p <- 30 ; ng <- 10
+p <- 15 ; ng <- 10
 n.list <- c(5*10^5, 10^6, 5*10^6, 10^7)
 n.time <- c()
 key <- 1000 # backingfile num
@@ -163,7 +129,7 @@ ggplot(n.time, aes(x=as.factor(n), y=runtime, col=strategy, group=strategy)) +
 
 
 # for p
-n <- 3*10^6 ; ng <- 10
+n <- 10^6 ; ng <- 10
 p.list <- c(10,30,50,80)
 p.time <- c()
 key <- 2000
@@ -186,7 +152,7 @@ ggplot(p.time, aes(x=as.factor(p), y=runtime, col=strategy, group=strategy)) +
 
 
 # for g
-p <- 30 ; n <- 3*10^6
+p <- 15 ; n <- 10^6
 g.list <- c(10,50,100,500)
 g.time <- c()
 key <- 3000
