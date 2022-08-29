@@ -76,13 +76,12 @@ compare.time <- function(key){
     })[3]
     
     # BIG-SAVE : bigmemory + foreach
-    dataYX <- as.big.matrix(cbind(y,x), backingpath="E:/temp",
-                            backingfile=paste0(key+m,"test-save.bin"),
-                            descriptorfile=paste0(key+m,"test-save.desc"), type="double")
-    BIGmatdes <- describe(dataYX)
-    x <- attach.big.matrix(BIGmatdes)
-    
     runtime[m,4] <- system.time({
+      dataYX <- as.big.matrix(cbind(y,x), backingpath="E:/temp",
+                              backingfile=paste0(key+m,"test-save.bin"),
+                              descriptorfile=paste0(key+m,"test-save.desc"), type="double")
+      BIGmatdes <- describe(dataYX)
+      x <- attach.big.matrix(BIGmatdes)
       BIGsave <- foreach(g=1:ng, .combine="+")%dopar%{
         require("edrGraphicalTools")
         require("bigmemory")
@@ -106,7 +105,7 @@ compare.time <- function(key){
 ######################################################################
 
 # for n
-p <- 15 ; ng <- 10
+p <- 50 ; ng <- 10
 n.list <- c(5*10^5, 10^6, 5*10^6, 10^7)
 n.time <- c()
 key <- 1000 # backingfile num
@@ -152,7 +151,7 @@ ggplot(p.time, aes(x=as.factor(p), y=runtime, col=strategy, group=strategy)) +
 
 
 # for g
-p <- 15 ; n <- 10^6
+p <- 50 ; n <- 10^6
 g.list <- c(10,50,100,500)
 g.time <- c()
 key <- 3000
